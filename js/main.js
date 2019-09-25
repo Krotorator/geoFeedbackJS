@@ -12186,8 +12186,7 @@ function initMap() {
     };
     e.markers_.forEach(function (marker) {
       // преобразуем координаты маркеров в строковый ключ
-      var coords = "(".concat(marker.position.lat().toString(), ", ").concat(marker.position.lng().toString(), ")");
-      markers1.push(marker.position); // получаем данные из хранилища по ключам и преобразуем в обьекты
+      var coords = "(".concat(marker.position.lat().toString(), ", ").concat(marker.position.lng().toString(), ")"); // получаем данные из хранилища по ключам и преобразуем в обьекты
 
       var storageContext = JSON.parse(localStorage.getItem(coords));
       var obj = {
