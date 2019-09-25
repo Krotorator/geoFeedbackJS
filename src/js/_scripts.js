@@ -247,7 +247,6 @@ function initMap() {
                 .lat()
                 .toString()}, ${marker.position.lng().toString()})`;
 
-            markers1.push(marker.position);
             // получаем данные из хранилища по ключам и преобразуем в обьекты
             let storageContext = JSON.parse(localStorage.getItem(coords));
 
