@@ -39,7 +39,7 @@ body {
 
 .logo {
   position: absolute;
-  z-index: 10000;
+  z-index: 200;
   right: 20px;
   bottom: 30px;
 }
@@ -48,7 +48,7 @@ body {
   background-color: #fff;
   position: absolute;
 
-  z-index: 1000;
+  z-index: 10000;
   width: 379px;
   height: 527px;
   border-radius: 8px;
@@ -119,6 +119,7 @@ body {
     border: none;
     margin-left: auto;
     margin-top: 15px;
+    outline: none;
   }
 }
 

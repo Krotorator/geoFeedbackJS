@@ -211,13 +211,20 @@ function initMap() {
             popup.style.display = "block";
 
             adaptiveElementPosition(e, popup);
+
+            if (popup.getAttribute("style").indexOf("display: block") != -1) {
+                popupFeedback.innerHTML = "";
+                formName.value = "";
+                formPlace.value = "";
+                formComment.value = "";
+            }
         }
     });
 
-    const mapListener = map.addListener("click", function(e) {
+    map.addListener("click", function(e) {
         setAddress(e.latLng, popupHeader);
 
-        setComment(e.latLng, map);
+        setComment(e.latLng.toString(), map);
 
         popupClose.addEventListener("click", function() {
             popup.style.display = "none";
@@ -232,31 +239,45 @@ function initMap() {
         popup.style.display = "none";
 
         let storageArr = {
-            places: []
+            list: []
         };
-
-        let coordsForCarouselLink = [];
         e.markers_.forEach(marker => {
             // преобразуем координаты маркеров в строковый ключ
             let coords = `(${marker.position
                 .lat()
                 .toString()}, ${marker.position.lng().toString()})`;
 
+            markers1.push(marker.position);
             // получаем данные из хранилища по ключам и преобразуем в обьекты
             let storageContext = JSON.parse(localStorage.getItem(coords));
 
-            // формируем обьект с массивом и пушим в него первый элемент из списка отзывов
-            let list = { list: [] };
-            list.list.push(storageContext.list[0]);
+            let obj = {
+                coords: coords,
+                comments: []
+            };
+            // // пушим сформированный обьект в массив контекста HBS
+            storageContext.list.forEach(comment => {
+                storageArr.list.push(comment);
 
-            // пушим сформированный обьект в массив контекста HBS
-            storageArr.places.push(list);
+                obj.comments.push([JSON.stringify(comment)]);
+            });
+            // проверяем соответствия отзыва адресу и добавляем в обьект комментария поле geo с координатами
+            storageArr.list.forEach(function(item) {
+                for (const key in obj) {
+                    if (key == "comments") {
+                        obj[key].forEach(comment => {
+                            if (comment == JSON.stringify(item)) {
+                                item.geo = obj.coords;
+                            }
+                        });
+                    }
+                }
+            });
 
             // рендерим комменты в DOM
             let tabContainerSourceHtml = tabContainerTemplate(storageArr);
-            tabContainer.innerHTML = tabContainerSourceHtml;
 
-            coordsForCarouselLink.push(coords);
+            tabContainer.innerHTML = tabContainerSourceHtml;
         });
         // проверяем, есть ли ссылки в каруселе, если есть - удаляем.
         let currentLinks = document.querySelector(".tab-links-container");
@@ -265,7 +286,7 @@ function initMap() {
         }
 
         // добавляем новые ссылки
-        addTabLink(storageArr.places, tabLinksContainer, carousel);
+        addTabLink(storageArr.list, tabLinksContainer, carousel);
 
         // получаем табы, которые были добавлены
         const tabs = document.querySelectorAll(".tab");
@@ -274,7 +295,6 @@ function initMap() {
         tabs[0].classList.add("tab__shown");
 
         // делаем карусель видимой
-
         carousel.style.display = "block";
         carousel.style.left = "50%";
         carousel.style.top = "50%";
@@ -289,7 +309,7 @@ function initMap() {
             let addressLink = tab.querySelector(".tab a");
 
             // преобразуем строковые координаты в обьект для геокода
-            let coords = coordsForCarouselLink[0 + j].slice(1, -1).split(",");
+            let coords = addressLink.innerText.slice(1, -1).split(",");
             let myLatLang = { lat: parseFloat(coords[0]), lng: parseFloat(coords[1]) };
 
             // делаем реверсивный геокод и записываем в ссылку получившийся строковый адрес
@@ -308,11 +328,13 @@ function initMap() {
                 adaptiveElementPosition(e, popup);
                 // преобразуем координаты в строковый ключ, берем по нему данные из localStorage, скармливаем в рендер и выводим в попап
                 let renderCoords = `(${coords[0].toString()},${coords[1].toString()})`;
+
                 let forSetAdrCoords = renderCoords.slice(1, -1).split(",");
                 setAddress(
                     { lat: parseFloat(forSetAdrCoords[0]), lng: parseFloat(forSetAdrCoords[1]) },
                     popupHeader
                 );
+                renderPopupOnClick(renderCoords, map);
 
                 carousel.style.display = "none";
             });
@@ -363,8 +385,9 @@ function setMarker(latLng, map) {
 
     marker.addListener("click", function(e) {
         // преобразуем координаты маркеров в строковый ключ
-        let coords = `(${e.latLng.lat().toString()}, ${e.latLng.lng().toString()})`;
-        renderPopupOnClick(coords, map, marker);
+        // let coords = `(${e.latLng.lat().toString()}, ${e.latLng.lng().toString()})`;
+
+        renderPopupOnClick(e.latLng, map, marker);
         setAddress(e.latLng, popupHeader);
     });
 
@@ -389,9 +412,24 @@ function setComment(coords, map, data) {
             var html = template(context);
             popupFeedback.innerHTML = html;
 
-            localStorage.setItem(coords, [JSON.stringify(context)]);
+            formName.value = "";
+            formPlace.value = "";
+            formComment.value = "";
 
-            setMarker(coords, map);
+            if (typeof coords == "string") {
+                localStorage.setItem(coords, [JSON.stringify(context)]);
+
+                let markerCoords = coords.slice(1, -1).split(",");
+                let myLatLang = {
+                    lat: parseFloat(markerCoords[0]),
+                    lng: parseFloat(markerCoords[1])
+                };
+                setMarker(myLatLang, map);
+            } else {
+                let strKeyCoords = "(" + coords.lat + ", " + coords.lng + ")";
+                localStorage.setItem(strKeyCoords, [JSON.stringify(context)]);
+                setMarker(coords, map);
+            }
         }
     };
 }
@@ -424,8 +462,10 @@ function renderPopupOnClick(coords, map) {
                 let storageContext = JSON.parse(localStorage.getItem(key));
                 var html = template(storageContext);
                 popupFeedback.innerHTML = html;
+
                 // пробрасываем координаты в в функцию для дальнейшего геокодинга и установки адреса в шапку попапа
                 let coords = key.slice(1, -1).split(",");
+
                 setComment(
                     { lat: parseFloat(coords[0]), lng: parseFloat(coords[1]) },
                     map,
@@ -443,7 +483,7 @@ function renderPopupOnClick(coords, map) {
     });
 }
 
-// добавляем ссылки на табы соответственно кол-ву элументов в массиве адресов
+// добавляем ссылки на табы, соответственно кол-ву элументов в массиве адресов
 function addTabLink(arr, what, where) {
     where.append(tabLinksContainer);
     for (let i = 0; i < arr.length; i++) {

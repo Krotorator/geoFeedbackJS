@@ -12158,11 +12158,18 @@ function initMap() {
     if (e.target.hasAttribute("style") && style.indexOf("z-index") != -1) {
       popup.style.display = "block";
       adaptiveElementPosition(e, popup);
+
+      if (popup.getAttribute("style").indexOf("display: block") != -1) {
+        popupFeedback.innerHTML = "";
+        formName.value = "";
+        formPlace.value = "";
+        formComment.value = "";
+      }
     }
   });
-  var mapListener = map.addListener("click", function (e) {
+  map.addListener("click", function (e) {
     setAddress(e.latLng, popupHeader);
-    setComment(e.latLng, map);
+    setComment(e.latLng.toString(), map);
     popupClose.addEventListener("click", function () {
       popup.style.display = "none";
       popupFeedback.innerHTML = "";
@@ -12175,25 +12182,38 @@ function initMap() {
   google.maps.event.addListener(markerCluster, "clusterclick", function (e) {
     popup.style.display = "none";
     var storageArr = {
-      places: []
+      list: []
     };
-    var coordsForCarouselLink = [];
     e.markers_.forEach(function (marker) {
       // преобразуем координаты маркеров в строковый ключ
-      var coords = "(".concat(marker.position.lat().toString(), ", ").concat(marker.position.lng().toString(), ")"); // получаем данные из хранилища по ключам и преобразуем в обьекты
+      var coords = "(".concat(marker.position.lat().toString(), ", ").concat(marker.position.lng().toString(), ")");
+      markers1.push(marker.position); // получаем данные из хранилища по ключам и преобразуем в обьекты
 
-      var storageContext = JSON.parse(localStorage.getItem(coords)); // формируем обьект с массивом и пушим в него первый элемент из списка отзывов
+      var storageContext = JSON.parse(localStorage.getItem(coords));
+      var obj = {
+        coords: coords,
+        comments: []
+      }; // // пушим сформированный обьект в массив контекста HBS
 
-      var list = {
-        list: []
-      };
-      list.list.push(storageContext.list[0]); // пушим сформированный обьект в массив контекста HBS
+      storageContext.list.forEach(function (comment) {
+        storageArr.list.push(comment);
+        obj.comments.push([JSON.stringify(comment)]);
+      }); // проверяем соответствия отзыва адресу и добавляем в обьект комментария поле geo с координатами
 
-      storageArr.places.push(list); // рендерим комменты в DOM
+      storageArr.list.forEach(function (item) {
+        for (var key in obj) {
+          if (key == "comments") {
+            obj[key].forEach(function (comment) {
+              if (comment == JSON.stringify(item)) {
+                item.geo = obj.coords;
+              }
+            });
+          }
+        }
+      }); // рендерим комменты в DOM
 
       var tabContainerSourceHtml = tabContainerTemplate(storageArr);
       tabContainer.innerHTML = tabContainerSourceHtml;
-      coordsForCarouselLink.push(coords);
     }); // проверяем, есть ли ссылки в каруселе, если есть - удаляем.
 
     var currentLinks = document.querySelector(".tab-links-container");
@@ -12203,7 +12223,7 @@ function initMap() {
     } // добавляем новые ссылки
 
 
-    addTabLink(storageArr.places, tabLinksContainer, carousel); // получаем табы, которые были добавлены
+    addTabLink(storageArr.list, tabLinksContainer, carousel); // получаем табы, которые были добавлены
 
     var tabs = document.querySelectorAll(".tab"); // показываем первый таб в списке загруженных
 
@@ -12220,7 +12240,7 @@ function initMap() {
 
       var addressLink = tab.querySelector(".tab a"); // преобразуем строковые координаты в обьект для геокода
 
-      var coords = coordsForCarouselLink[0 + j].slice(1, -1).split(",");
+      var coords = addressLink.innerText.slice(1, -1).split(",");
       var myLatLang = {
         lat: parseFloat(coords[0]),
         lng: parseFloat(coords[1])
@@ -12247,6 +12267,7 @@ function initMap() {
           lat: parseFloat(forSetAdrCoords[0]),
           lng: parseFloat(forSetAdrCoords[1])
         }, popupHeader);
+        renderPopupOnClick(renderCoords, map);
         carousel.style.display = "none";
       });
       j++;
@@ -12295,8 +12316,8 @@ function setMarker(latLng, map) {
   });
   marker.addListener("click", function (e) {
     // преобразуем координаты маркеров в строковый ключ
-    var coords = "(".concat(e.latLng.lat().toString(), ", ").concat(e.latLng.lng().toString(), ")");
-    renderPopupOnClick(coords, map, marker);
+    // let coords = `(${e.latLng.lat().toString()}, ${e.latLng.lng().toString()})`;
+    renderPopupOnClick(e.latLng, map, marker);
     setAddress(e.latLng, popupHeader);
   });
   markerCluster.addMarker(marker);
@@ -12322,8 +12343,23 @@ function setComment(coords, map, data) {
       context.list.push(obj);
       var html = template(context);
       popupFeedback.innerHTML = html;
-      localStorage.setItem(coords, [JSON.stringify(context)]);
-      setMarker(coords, map);
+      formName.value = "";
+      formPlace.value = "";
+      formComment.value = "";
+
+      if (typeof coords == "string") {
+        localStorage.setItem(coords, [JSON.stringify(context)]);
+        var markerCoords = coords.slice(1, -1).split(",");
+        var myLatLang = {
+          lat: parseFloat(markerCoords[0]),
+          lng: parseFloat(markerCoords[1])
+        };
+        setMarker(myLatLang, map);
+      } else {
+        var strKeyCoords = "(" + coords.lat + ", " + coords.lng + ")";
+        localStorage.setItem(strKeyCoords, [JSON.stringify(context)]);
+        setMarker(coords, map);
+      }
     }
   };
 }
@@ -12419,7 +12455,7 @@ function renderPopupOnClick(coords, map) {
     formPlace.value = "";
     formComment.value = "";
   });
-} // добавляем ссылки на табы соответственно кол-ву элументов в массиве адресов
+} // добавляем ссылки на табы, соответственно кол-ву элументов в массиве адресов
 
 
 function addTabLink(arr, what, where) {
@@ -12456,6 +12492,3 @@ function adaptiveElementPosition(ev, element) {
   popup.style.display = "block";
 }
 /* //= _scripts1.js */
-
-
-console.log(1);

@@ -46,19 +46,18 @@
         </script>
         <script id="carousel-template" type="text/x-handlebars-template">
 
-            {{#each places}}
-            <div class="tab" id="tab1">
-                    {{#each list}}
+            {{#each list}}
+                <div class="tab" id="tab1">
+                    <div>
                         <div>
-                            <div>
-                                <b>{{place}}</b>
-                            </div>
-                            <a href="#"></a> <br>
-                            <span>{{comment }}</span>
+                            <b>{{place}}</b>
                         </div>
-                    {{/each}}
+                        <a href="#">{{geo}}</a>
+                            <br>
+                        <span>{{comment }}</span>
+                    </div>
                 </div>
-                {{/each}}
+            {{/each}}
         </script>
 
         <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
