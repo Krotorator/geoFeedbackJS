@@ -202,19 +202,17 @@ function initMap() {
 
     renderMarkers(map);
 
-    // фильтруем клик по элементу у которого есть свойство z-ind(в нашем слчае это карта) и тогда рендерим попап.
-    //  таким образом клик по кластеру покажет только карусель. ужасный способ!
-
     map.addListener("click", function(e) {
-        console.log(e.pixel.x, e.pixel.y);
+        // проверка, чтоб не открывался попап вместе с каруселью
+        if (carousel.getAttribute("style").indexOf("block") != -1) {
+            popup.style.display = "none";
+        } else if (carousel.getAttribute("style").indexOf("block") == -1) {
+            adaptiveElementPosition({ x: e.pixel.x, y: e.pixel.y }, popup);
+        }
 
         setAddress(e.latLng, popupHeader);
 
         setComment(e.latLng.toString(), map);
-
-        popup.style.display = "block";
-
-        adaptiveElementPosition({ x: e.pixel.x, y: e.pixel.y }, popup);
 
         if (popup.getAttribute("style").indexOf("display: block") != -1) {
             popupFeedback.innerHTML = "";
@@ -233,8 +231,6 @@ function initMap() {
     });
     // отслеживаем клик по кластерным Маркерам
     google.maps.event.addListener(markerCluster, "clusterclick", e => {
-        popup.style.display = "none";
-        console.log(e);
         let storageArr = {
             list: []
         };
@@ -493,22 +489,40 @@ function addTabLink(arr, what, where) {
 }
 
 function adaptiveElementPosition(eventCoords, element) {
+    let elemWidth = element.getBoundingClientRect().width;
+    let elemHeight = element.getBoundingClientRect().height;
     let coordsX = eventCoords.x;
     let coordsY = eventCoords.y;
-    let elemPositionRight = element.getBoundingClientRect().width + coordsX;
-    let elemPositionTop = element.getBoundingClientRect().height + coordsY;
-    let diffX = elemPositionRight - window.innerWidth;
-    let diffY = elemPositionTop - window.innerHeight;
-    // фильтруем позицию попапа, при которой он выходит за границы экрана
-    if (elemPositionRight > window.innerWidth) {
-        element.style.left = coordsX - diffX + "px";
+
+    // т.к. размер попапа при до первой его проорисовки неизвестен, то выполняем проверку
+    if (elemWidth && elemHeight) {
+        // если размер попапа известен - производим фильтрацию
+        let elemPositionRight = elemWidth + coordsX;
+        let elemPositionTop = elemHeight + coordsY;
+        let diffX = elemPositionRight - window.innerWidth;
+        let diffY = elemPositionTop - window.innerHeight;
+        console.log(elemWidth, elemHeight);
+        element.style.transform = "translate(0, 0)";
+        // фильтруем позицию попапа, при которой он выходит за границы экрана
+        if (elemPositionRight > window.innerWidth) {
+            element.style.left = coordsX - diffX + "px";
+        } else {
+            element.style.left = coordsX + "px";
+        }
+        if (elemPositionTop > window.innerHeight) {
+            element.style.top = coordsY - diffY + "px";
+        } else {
+            element.style.top = coordsY + "px";
+        }
+        popup.style.display = "block";
     } else {
-        element.style.left = coordsX + "px";
+        // если размер попапа неизвестен - то просто рендерим его по центру экрана,
+        // чтобы избежать отрисовки его за пределами window
+        element.style.top = "50%";
+        element.style.left = "50%";
+        element.style.transform = "translate(-50%, -50%)";
+        popup.style.display = "block";
     }
-    if (elemPositionTop > window.innerHeight) {
-        element.style.top = coordsY - diffY + "px";
-    } else {
-        element.style.top = coordsY + "px";
-    }
-    popup.style.display = "block";
+
+    console.log("я отработал!!!");
 }
