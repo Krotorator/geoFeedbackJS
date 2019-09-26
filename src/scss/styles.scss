@@ -160,6 +160,18 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  &__prev,
+  &__next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  &__prev {
+    left: 10px;
+  }
+  &__next {
+    right: 10px;
+  }
 }
 
 .tab-container {
@@ -212,6 +224,19 @@ body {
   padding-top: 5px;
   display: flex;
   justify-content: space-evenly;
+}
+
+.tab__link-active:before {
+  transition: all 0.3s;
+  content: "";
+  display: inline-block;
+  height: 2px;
+  width: 100%;
+  background-color: black;
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translate(-50%);
 }
 
 .tab-close {
