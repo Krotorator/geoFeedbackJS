@@ -12274,7 +12274,11 @@ function initMap() {
 
     carousel.addEventListener("click", function (e) {
       if (e.target.classList.contains("tab__link")) {
-        tabs.forEach(function (tab, i) {
+        document.querySelectorAll(".tab__link").forEach(function (tabLink) {
+          return tabLink.classList.remove("tab__link-active");
+        });
+        e.target.classList.add("tab__link-active");
+        tabs.forEach(function (tab) {
           if (tab != e.target) {
             tab.classList.remove("tab__shown");
           }
@@ -12285,6 +12289,67 @@ function initMap() {
             }
           }
         });
+      } // tabs.forEach(function(tab) {
+      //     if (tab.classList.contains("tab__shown")) {
+      //         let tabLinks = document.querySelectorAll(".tab__link");
+      //         for (let i = 0; i < tabLinks.length; i++) {
+      //             if (tabLinks[i].getAttribute("href").slice(1) == tab.getAttribute("id")) {
+      //                 tabLinks[i + 1].classList.add("tab__link-active");
+      //                 console.log(tabLinks[i]);
+      //                 console.log(tabLinks[i + 1]);
+      //             } else {
+      //                 tabLinks[i].classList.remove("tab__link-active");
+      //             }
+      //         }
+      //     }
+      // });
+      // стрелка вправо
+
+
+      if (e.target.tagName == "I" && e.target.classList.contains("fa-chevron-right")) {
+        var currentTab;
+
+        for (var i = 0; i < tabs.length; i++) {
+          if (tabs[i].classList.contains("tab__shown")) {
+            currentTab = i;
+          }
+        }
+
+        if (currentTab + 1 > tabs.length - 1) {
+          currentTab = 0;
+          tabs[tabs.length - 1].classList.remove("tab__shown");
+          tabs[currentTab].classList.add("tab__shown");
+        } else {
+          tabs[currentTab].classList.remove("tab__shown");
+          tabs[currentTab + 1].classList.add("tab__shown");
+        }
+      } // стрелка влево
+
+
+      if (e.target.tagName == "I" && e.target.classList.contains("fa-chevron-left")) {
+        var _currentTab;
+
+        for (var _i = 0; _i < tabs.length; _i++) {
+          if (tabs[_i].classList.contains("tab__shown")) {
+            _currentTab = _i;
+          }
+        }
+
+        if (_currentTab - 1 < 0) {
+          _currentTab = tabs.length - 1;
+          tabs[0].classList.remove("tab__shown");
+
+          tabs[_currentTab].classList.add("tab__shown");
+
+          console.log("menshe");
+        } else {
+          tabs[_currentTab].classList.remove("tab__shown");
+
+          console.log(_currentTab);
+          console.log(tabs.length - 1);
+
+          tabs[_currentTab - 1].classList.add("tab__shown");
+        }
       }
     });
   });
@@ -12482,7 +12547,6 @@ function adaptiveElementPosition(eventCoords, element) {
     var elemPositionTop = elemHeight + coordsY;
     var diffX = elemPositionRight - window.innerWidth;
     var diffY = elemPositionTop - window.innerHeight;
-    console.log(elemWidth, elemHeight);
     element.style.transform = "translate(0, 0)"; // фильтруем позицию попапа, при которой он выходит за границы экрана
 
     if (elemPositionRight > window.innerWidth) {
@@ -12506,7 +12570,5 @@ function adaptiveElementPosition(eventCoords, element) {
     element.style.transform = "translate(-50%, -50%)";
     popup.style.display = "block";
   }
-
-  console.log("я отработал!!!");
 }
 /* //= _scripts1.js */
