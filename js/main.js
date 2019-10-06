@@ -12183,37 +12183,35 @@ function initMap() {
   google.maps.event.addListener(markerCluster, "clusterclick", function (e) {
     var storageArr = {
       list: []
-    };
+    }; // let coordsArr = [];
+
+    var coordsArr = new Set();
     e.markers_.forEach(function (marker) {
       // преобразуем координаты маркеров в строковый ключ
-      var coords = "(".concat(marker.position.lat().toString(), ", ").concat(marker.position.lng().toString(), ")"); // получаем данные из хранилища по ключам и преобразуем в обьекты
-
+      var coords = "(".concat(marker.position.lat().toString(), ", ").concat(marker.position.lng().toString(), ")");
+      coordsArr.add(coords);
+    });
+    var commentsAndCoords = [];
+    coordsArr.forEach(function (coords) {
       var storageContext = JSON.parse(localStorage.getItem(coords));
       var obj = {
         coords: coords,
-        comments: []
-      }; // // пушим сформированный обьект в массив контекста HBS
+        comments: storageContext
+      };
+      commentsAndCoords.push(obj);
+    }); /////////////////////////////////
 
-      storageContext.list.forEach(function (comment) {
-        storageArr.list.push(comment);
-        obj.comments.push([JSON.stringify(comment)]);
-      }); // проверяем соответствия отзыва адресу и добавляем в обьект комментария поле geo с координатами
-
-      storageArr.list.forEach(function (item) {
-        for (var key in obj) {
-          if (key == "comments") {
-            obj[key].forEach(function (comment) {
-              if (comment == JSON.stringify(item)) {
-                item.geo = obj.coords;
-              }
-            });
-          }
-        }
-      }); // рендерим комменты в DOM
-
-      var tabContainerSourceHtml = tabContainerTemplate(storageArr);
-      tabContainer.innerHTML = tabContainerSourceHtml;
-    }); // проверяем, есть ли ссылки в каруселе, если есть - удаляем.
+    var forTemplate = {
+      list: []
+    };
+    commentsAndCoords.forEach(function (obj) {
+      for (var i = 0; i < obj.comments.list.length; i++) {
+        obj.comments.list[i].geo = obj.coords;
+        forTemplate.list.push(obj.comments.list[i]);
+      }
+    });
+    var tabContainerSourceHtml = tabContainerTemplate(forTemplate);
+    tabContainer.innerHTML = tabContainerSourceHtml; // проверяем, есть ли ссылки в каруселе, если есть - удаляем.
 
     var currentLinks = document.querySelector(".tab-links-container");
 
@@ -12222,7 +12220,7 @@ function initMap() {
     } // добавляем новые ссылки
 
 
-    addTabLink(storageArr.list, tabLinksContainer, carousel); // получаем табы, которые были добавлены
+    addTabLink(forTemplate.list, tabLinksContainer, carousel); // получаем табы, которые были добавлены
 
     var tabs = document.querySelectorAll(".tab"); // показываем первый таб в списке загруженных
 
@@ -12289,21 +12287,7 @@ function initMap() {
             }
           }
         });
-      } // tabs.forEach(function(tab) {
-      //     if (tab.classList.contains("tab__shown")) {
-      //         let tabLinks = document.querySelectorAll(".tab__link");
-      //         for (let i = 0; i < tabLinks.length; i++) {
-      //             if (tabLinks[i].getAttribute("href").slice(1) == tab.getAttribute("id")) {
-      //                 tabLinks[i + 1].classList.add("tab__link-active");
-      //                 console.log(tabLinks[i]);
-      //                 console.log(tabLinks[i + 1]);
-      //             } else {
-      //                 tabLinks[i].classList.remove("tab__link-active");
-      //             }
-      //         }
-      //     }
-      // });
-      // стрелка вправо
+      } // стрелка вправо
 
 
       if (e.target.tagName == "I" && e.target.classList.contains("fa-chevron-right")) {
@@ -12340,13 +12324,8 @@ function initMap() {
           tabs[0].classList.remove("tab__shown");
 
           tabs[_currentTab].classList.add("tab__shown");
-
-          console.log("menshe");
         } else {
           tabs[_currentTab].classList.remove("tab__shown");
-
-          console.log(_currentTab);
-          console.log(tabs.length - 1);
 
           tabs[_currentTab - 1].classList.add("tab__shown");
         }
@@ -12437,14 +12416,22 @@ function renderMarkers(map) {
     var _iteratorError = undefined;
 
     try {
-      for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _loop = function _loop() {
         var key = _step.value;
+        // создаем кластеры по количеству комментов в каждом маркере
         var coords = key.slice(1, -1).split(",");
         var myLatLang = {
           lat: parseFloat(coords[0]),
           lng: parseFloat(coords[1])
         };
-        setMarker(myLatLang, map);
+        var store = JSON.parse(localStorage.getItem(key));
+        store.list.forEach(function () {
+          setMarker(myLatLang, map);
+        });
+      };
+
+      for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        _loop();
       }
     } catch (err) {
       _didIteratorError = true;
