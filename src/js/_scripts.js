@@ -229,48 +229,49 @@ function initMap() {
             formComment.value = "";
         });
     });
+
     // отслеживаем клик по кластерным Маркерам
     google.maps.event.addListener(markerCluster, "clusterclick", e => {
         let storageArr = {
             list: []
         };
+
+        // let coordsArr = [];
+        let coordsArr = new Set();
         e.markers_.forEach(marker => {
             // преобразуем координаты маркеров в строковый ключ
             let coords = `(${marker.position
                 .lat()
                 .toString()}, ${marker.position.lng().toString()})`;
+            coordsArr.add(coords);
+        });
 
-            // получаем данные из хранилища по ключам и преобразуем в обьекты
+        let commentsAndCoords = [];
+        coordsArr.forEach(coords => {
             let storageContext = JSON.parse(localStorage.getItem(coords));
-
             let obj = {
                 coords: coords,
-                comments: []
+                comments: storageContext
             };
-            // // пушим сформированный обьект в массив контекста HBS
-            storageContext.list.forEach(comment => {
-                storageArr.list.push(comment);
 
-                obj.comments.push([JSON.stringify(comment)]);
-            });
-            // проверяем соответствия отзыва адресу и добавляем в обьект комментария поле geo с координатами
-            storageArr.list.forEach(function(item) {
-                for (const key in obj) {
-                    if (key == "comments") {
-                        obj[key].forEach(comment => {
-                            if (comment == JSON.stringify(item)) {
-                                item.geo = obj.coords;
-                            }
-                        });
-                    }
-                }
-            });
-
-            // рендерим комменты в DOM
-            let tabContainerSourceHtml = tabContainerTemplate(storageArr);
-
-            tabContainer.innerHTML = tabContainerSourceHtml;
+            commentsAndCoords.push(obj);
         });
+        /////////////////////////////////
+        let forTemplate = {
+            list: []
+        };
+
+        commentsAndCoords.forEach(obj => {
+            for (let i = 0; i < obj.comments.list.length; i++) {
+                obj.comments.list[i].geo = obj.coords;
+                forTemplate.list.push(obj.comments.list[i]);
+            }
+        });
+
+        let tabContainerSourceHtml = tabContainerTemplate(forTemplate);
+
+        tabContainer.innerHTML = tabContainerSourceHtml;
+
         // проверяем, есть ли ссылки в каруселе, если есть - удаляем.
         let currentLinks = document.querySelector(".tab-links-container");
         if (currentLinks.innerHTML != "") {
@@ -278,7 +279,7 @@ function initMap() {
         }
 
         // добавляем новые ссылки
-        addTabLink(storageArr.list, tabLinksContainer, carousel);
+        addTabLink(forTemplate.list, tabLinksContainer, carousel);
 
         // получаем табы, которые были добавлены
         const tabs = document.querySelectorAll(".tab");
@@ -353,20 +354,6 @@ function initMap() {
                     }
                 });
             }
-            // tabs.forEach(function(tab) {
-            //     if (tab.classList.contains("tab__shown")) {
-            //         let tabLinks = document.querySelectorAll(".tab__link");
-            //         for (let i = 0; i < tabLinks.length; i++) {
-            //             if (tabLinks[i].getAttribute("href").slice(1) == tab.getAttribute("id")) {
-            //                 tabLinks[i + 1].classList.add("tab__link-active");
-            //                 console.log(tabLinks[i]);
-            //                 console.log(tabLinks[i + 1]);
-            //             } else {
-            //                 tabLinks[i].classList.remove("tab__link-active");
-            //             }
-            //         }
-            //     }
-            // });
 
             // стрелка вправо
             if (e.target.tagName == "I" && e.target.classList.contains("fa-chevron-right")) {
@@ -398,12 +385,8 @@ function initMap() {
                     currentTab = tabs.length - 1;
                     tabs[0].classList.remove("tab__shown");
                     tabs[currentTab].classList.add("tab__shown");
-                    console.log("menshe");
                 } else {
                     tabs[currentTab].classList.remove("tab__shown");
-                    console.log(currentTab);
-                    console.log(tabs.length - 1);
-
                     tabs[currentTab - 1].classList.add("tab__shown");
                 }
             }
@@ -489,9 +472,13 @@ function renderMarkers(map) {
     let keys = Object.keys(localStorage);
     if (keys) {
         for (let key of keys) {
+            // создаем кластеры по количеству комментов в каждом маркере
             let coords = key.slice(1, -1).split(",");
             let myLatLang = { lat: parseFloat(coords[0]), lng: parseFloat(coords[1]) };
-            setMarker(myLatLang, map);
+            let store = JSON.parse(localStorage.getItem(key));
+            store.list.forEach(() => {
+                setMarker(myLatLang, map);
+            });
         }
     }
 }
