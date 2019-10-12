@@ -26,7 +26,7 @@ function initMap() {
       lat: 47.095565,
       lng: 37.546395
     },
-    zoom: 18,
+    zoom: 15,
     scaleControl: false,
     streetViewControl: false,
     rotateControl: false,
