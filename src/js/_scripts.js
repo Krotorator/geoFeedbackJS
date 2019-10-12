@@ -22,8 +22,8 @@ var markerCluster;
 
 function initMap() {
     const map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 50.450938, lng: 30.522505 },
-        zoom: 10,
+        center: { lat: 47.095565, lng: 37.546395 },
+        zoom: 18,
         scaleControl: false,
         streetViewControl: false,
         rotateControl: false,
