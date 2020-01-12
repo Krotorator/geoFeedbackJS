@@ -1,43 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>GeoFeedback</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="keywords" content="" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.2.0/handlebars.js"></script>
-        <link rel="stylesheet" href="css/styles.min.css" />
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" />
-        <link rel="shotcut icon" href="favicon.ico" />
-        <meta name="description" content="" />
-    </head>
-    <body>
-        <img class="logo" src="img/logo.png" alt="logo" />
-        <div id="map"></div>
-        <div class="popup" id="popup" style="display: none">
-            <div class="popup__header">
-                <i class="fas fa-map-marker-alt"></i>
-                <span class="popup__address"></span>
-                <button class="popup__close"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="popup__feedback"></div>
-            <form class="popup__form" id="form">
-                <h2 class="popup__form-title">Your feedback</h2>
-                <input type="text" id="name" name="name" placeholder="Your name" />
-                <input type="text" id="place" name="place" placeholder="Enter place" />
-                <textarea name="comment" id="comment" placeholder="Leave your comment"></textarea>
-                <button class="popup__addBtn" type="submit">Send</button>
-            </form>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>GeoFeedback</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords" content="" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.2.0/handlebars.js"></script>
+    <link rel="stylesheet" href="css/styles.min.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" />
+    <link rel="shotcut icon" href="favicon.ico" />
+    <meta name="description" content="" />
+</head>
+
+<body>
+    <img class="logo" src="img/logo.png" alt="logo" />
+    <div id="map"></div>
+    <div class="popup" id="popup" style="display: none">
+        <div class="popup__header">
+            <i class="fas fa-map-marker-alt"></i>
+            <span class="popup__address"></span>
+            <button class="popup__close"><i class="fas fa-times"></i></button>
         </div>
-        <div class="carousel" style="display: none">
-            <button class="tab-close"><i class="fas fa-times"></i></button>
-            <div class="tab-container"></div>
-            <div class="tab-links-container"></div>
-            <a href="#" class="carousel__prev"><i class="fas fa-chevron-left"></i></a>
-            <a href="#" class="carousel__next"><i class="fas fa-chevron-right"></i></a>
-        </div>
-        <script id="hb-template" type="text/x-handlebars-template">
+        <div class="popup__feedback"></div>
+        <form class="popup__form" id="form">
+            <h2 class="popup__form-title">Your feedback</h2>
+            <input type="text" id="name" name="name" placeholder="Your name" />
+            <input type="text" id="place" name="place" placeholder="Enter place" />
+            <textarea name="comment" id="comment" placeholder="Leave your comment"></textarea>
+            <button class="popup__addBtn" type="submit">Send</button>
+        </form>
+    </div>
+    <div class="carousel" style="display: none">
+        <button class="tab-close"><i class="fas fa-times"></i></button>
+        <div class="tab-container"></div>
+        <div class="tab-links-container"></div>
+        <a href="#" class="carousel__prev"><i class="fas fa-chevron-left"></i></a>
+        <a href="#" class="carousel__next"><i class="fas fa-chevron-right"></i></a>
+    </div>
+    <script id="hb-template" type="text/x-handlebars-template">
             {{#each list}}
                 <div>
                     <b style="font-weight: 500;">{{name}}</b>
@@ -46,7 +48,7 @@
                 </div>
             {{/each}}
         </script>
-        <script id="carousel-template" type="text/x-handlebars-template">
+    <script id="carousel-template" type="text/x-handlebars-template">
 
             {{#each list}}
             <div class="tab" id="tab1">
@@ -62,12 +64,11 @@
                 {{/each}}
         </script>
 
-        <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
-        <script
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDXUTMWWK4qZwIsU3AudvJ9UC48L9IdA8&callback=initMap"
-            async
-            defer
-        ></script>
-        <script src="js/main.js"></script>
-    </body>
+    <script
+        src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzfsLqx8cz3AeQGc8q64HHZz2KC400uR8&callback=initMap"
+        async defer></script>
+    <script src="js/main.js"></script>
+</body>
+
 </html>
