@@ -470,15 +470,20 @@ function setComment(coords, map, data) {
 
 function renderMarkers(map) {
     let keys = Object.keys(localStorage);
+    console.log(keys);
+
     if (keys) {
         for (let key of keys) {
             // создаем кластеры по количеству комментов в каждом маркере
             let coords = key.slice(1, -1).split(",");
             let myLatLang = { lat: parseFloat(coords[0]), lng: parseFloat(coords[1]) };
             let store = JSON.parse(localStorage.getItem(key));
-            store.list.forEach(() => {
-                setMarker(myLatLang, map);
-            });
+            console.log(store);
+            if (store.list) {
+                store.list.forEach(() => {
+                    setMarker(myLatLang, map);
+                });
+            }
         }
     }
 }

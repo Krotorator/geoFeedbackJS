@@ -406,6 +406,7 @@ function setComment(coords, map, data) {
 
 function renderMarkers(map) {
   var keys = Object.keys(localStorage);
+  console.log(keys);
 
   if (keys) {
     var _iteratorNormalCompletion = true;
@@ -422,9 +423,13 @@ function renderMarkers(map) {
           lng: parseFloat(coords[1])
         };
         var store = JSON.parse(localStorage.getItem(key));
-        store.list.forEach(function () {
-          setMarker(myLatLang, map);
-        });
+        console.log(store);
+
+        if (store.list) {
+          store.list.forEach(function () {
+            setMarker(myLatLang, map);
+          });
+        }
       };
 
       for (var _iterator = keys[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
